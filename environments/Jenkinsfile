@@ -1,0 +1,50 @@
+pipeline{
+    agent any
+    tools{
+        maven 'mymaven'
+    }
+    // Pipleline level ENV variables
+    environment{
+        AppName = 'AddressBookApp'
+        Build_Env = 'Dev'
+        Build_name = 'addressbook.war'
+    }
+    stages{
+        stage('Checkout Code'){
+            steps{
+                echo "Checking out code from GitHub for ${AppName} in ${Build_Env} environment"
+                git 'https://github.com/Sonal0409/DevOpsCodeDemo.git'
+            }
+    }
+        stage('Build'){
+            steps{
+                echo "Building the application ${AppName} using Maven in ${Build_Env} environment"
+                sh 'mvn package'
+              //  echo "Test type ${Test_Type}"
+            }
+        }
+        stage('Test'){
+            environment{
+                Test_Type = 'Smoke'
+                TEST_REPORT_DIR = 'target/surefire-reports'
+            }
+            steps{
+                echo "Running ${Test_Type} tests for ${AppName} in ${Build_Env} environment"
+                sh 'mvn test'
+                echo "Publishing test reports and path is ${TEST_REPORT_DIR}"
+            }
+        }
+
+       stage('Deploy'){
+        environment{
+            Deploy_ENV = 'Staging'
+        }
+            steps{
+                echo "Deploying ${AppName} to ${Build_Env} environment with build name ${Build_name}"
+                // Add deployment steps here
+                echo "Deployment to ${Deploy_ENV} environment completed successfully"
+            }
+        }
+
+    }
+}
